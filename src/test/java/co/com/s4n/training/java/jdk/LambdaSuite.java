@@ -179,4 +179,32 @@ public class LambdaSuite {
 
     }
 
+    @FunctionalInterface
+    interface LambdaConConsumerAndSupplier{
+        Consumer<Integer> operarConConsumerAndSupplier(Supplier<Integer> a,
+                                          Supplier<Integer> b,
+                                          Supplier<Integer> c);
+    }
+
+    @Test
+    public void usarUnaFuncionConConsumerAndSupplier(){
+        LambdaConConsumerAndSupplier lambda = (x,y,z) -> {
+            Consumer<Integer> c = n -> {
+                Integer suma = x.get() + y.get() + z.get();
+                System.out.println("La suma es: "+suma);
+            };
+            return  c;
+        };
+
+        Supplier s1 = () -> 1;
+
+        Supplier s2 = () -> 2;
+
+        Supplier s3 = () -> 3;
+
+        Consumer<Integer> c = lambda.operarConConsumerAndSupplier(s1, s2, s3);
+
+        c.accept(new Integer(9));
+    }
+
 }
