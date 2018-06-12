@@ -190,7 +190,7 @@ public class LambdaSuite {
     public void usarUnaFuncionConConsumerAndSupplier(){
         LambdaConConsumerAndSupplier lambda = (x,y,z) -> {
             Consumer<Integer> c = n -> {
-                Integer suma = x.get() + y.get() + z.get();
+                Integer suma = x.get() + y.get() + z.get() + n;
                 System.out.println("La suma es: "+suma);
             };
             return  c;
