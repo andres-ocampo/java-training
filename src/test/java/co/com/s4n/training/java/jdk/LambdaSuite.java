@@ -207,4 +207,35 @@ public class LambdaSuite {
         c.accept(new Integer(9));
     }
 
+    class ClaseDeEjemplo6{
+
+        public String operarConSupplier(Supplier<Consumer<Integer>> s){
+            return s.get().toString();
+        }
+    }
+
+    class ClaseDeEjemplo7{
+
+        public Consumer<Integer> operarConConsumer(Consumer<Integer> c, int i){ c.accept(4); return c;}
+    }
+
+    @Test
+    public void usarSupplierConConsumer(){
+        Consumer<Integer> c = n -> {
+            System.out.println("El valor es: " +n);
+        };
+
+        Supplier<Consumer<Integer>> s1 = () -> {
+            return c;
+        };
+
+        ClaseDeEjemplo6 instancia = new ClaseDeEjemplo6();
+        ClaseDeEjemplo7 instancia2 = new ClaseDeEjemplo7();
+
+        String resultado = instancia.operarConSupplier(s1);
+        Consumer<Integer> consumer = instancia2.operarConConsumer(c, 4);
+        consumer.accept(new Integer(4));
+
+    }
+
 }
