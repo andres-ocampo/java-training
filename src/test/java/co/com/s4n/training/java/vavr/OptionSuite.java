@@ -17,6 +17,7 @@ import static io.vavr.Patterns.$None;
 import static io.vavr.Patterns.$Some;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static io.vavr.API.Some;
@@ -280,5 +281,59 @@ public class OptionSuite {
         Option<Integer> integers = For(esPar(2), d ->
                                    For(esPar(4), c -> Option(d+c))).toOption();
         assertEquals(integers,Some(6));
+    }
+
+    private Option<Integer> sumar(int a, int b){
+        System.out.println("Sumando a: "+a+" + b: "+b);
+        return Option.of(a+b);
+    }
+
+    private Option<Integer> restar(int a, int b){
+        System.out.println("Restando a: "+a+" - b: "+b);
+        return a-b>0 ? Option.of(a-b) : None();
+    }
+
+    @Test
+    public void flatMapInOption() {
+
+        Option<Integer> resultado =
+                sumar(1, 1)
+                .flatMap(a -> sumar(a, 1)
+                    .flatMap(b -> sumar(b, 1)
+                        .flatMap(c -> sumar(c, 1)
+                            .flatMap(d -> sumar(d, 1))
+        )));
+
+        assertEquals(resultado.getOrElse(666).intValue(),6);
+
+
+        /*Option<Integer> o1 = Option.of(1);
+        Option<Option<Integer>> m = o1.map(i -> Option.of(identidadPosibleNull(i - 3)));
+        Option<Integer> y = o1.flatMap(i -> Option.of(identidadPosibleNull(i - 3)));*/
+    }
+
+    @Test
+    public void flatMapInOptionConNone() {
+
+        Option<Integer> resultado =
+                sumar(1, 1)
+                        .flatMap(a -> sumar(a, 1)
+                                .flatMap(b -> restar(b, 4)
+                                        .flatMap(c -> sumar(c, 1)
+                                                .flatMap(d -> sumar(d, 1))
+                                        )));
+
+        assertEquals(resultado,None());
+    }
+
+    @Test
+    public void flatMapInOptionConFor() {
+
+        Option<Integer> res =
+                For(sumar(1, 1), r1 ->
+                For(sumar(r1, 1), r2 ->
+                For(sumar(r2, 1), r3 -> sumar(r3, r1)))).toOption();
+
+        assertEquals(res.getOrElse(666).intValue(),6);
     }
 }
