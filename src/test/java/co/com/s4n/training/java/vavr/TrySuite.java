@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import java.util.List;
 import java.util.function.Consumer;
 import static io.vavr.control.Try.failure;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TrySuite {
@@ -33,8 +34,11 @@ public class TrySuite {
                 Success(3),
                 myTrySuccess);
 
+        assertNotEquals(3, myTrySuccess);
+
         assertTrue("failed - the values is a Failure",
                 myTryFailure.isFailure());
+
     }
 
     private String patternMyTry(Try<Integer> myTry) {
@@ -116,6 +120,24 @@ public class TrySuite {
         assertEquals("Failure - it should transform the number to text",
                 "5 example of text",
                 transform);
+    }
+
+    @Test
+    public void testSuccessTransform2() {
+        Try<Integer> number = Try.of(() -> 5);
+        Try<Integer> transform = number.transform(self -> self);
+
+        assertEquals("Failure - it should transform the number to text",
+                Success(5),
+                transform);
+    }
+
+    @Test
+    public void testingMap(){
+        Try<String> s = Try.of(() -> "andres");
+        Try<Integer> length = s.map(x -> x.length());
+
+        assertEquals(Success(6),length);
     }
 
     /**
@@ -330,6 +352,7 @@ public class TrySuite {
                 Try.failure(new ArithmeticException("/ by zero")).toString() ,
                 aTry2.toString());
     }
+
     /**
      *  El Recover retorna el valor a recuperar, pero sin Try, permitiendo que lance un Exception
      *  si, falla
@@ -356,5 +379,60 @@ public class TrySuite {
         Try<Integer> aTry = Try.of(() -> 2).mapTry(checkedFunction1);
         assertEquals("Failed the checkedFuntion", Success(1),aTry);
     }
+
+    private Try<Integer> sumar(Integer a, Integer b){
+        return Try.of(()->a+b);
+    }
+
+    private Try<Integer> dividir(Integer a, Integer b){
+        return Try.of(()->a/b);
+    }
+
+    private Try<Integer> dividirConRecoverWith(Integer a, Integer b){
+        return Try.of(()->a/b).recoverWith(ArithmeticException.class, Try.of(() -> -1));
+    }
+
+    @Test
+    public void testMonadicCompositionWithFlatMap(){
+        Try<Integer> res = sumar(1, 2)
+                .flatMap(r0 -> sumar(r0, r0)
+                        .flatMap(r1 -> sumar(r1, -6)
+                                .flatMap(r2 -> dividir(r2, r2))));
+
+        assertTrue(res.isFailure());
+    }
+
+    @Test
+    public void testMonadicCompositionWithForComprehension(){
+        Try<Integer> res =
+                For(sumar(1,2), r0 ->
+                    For(sumar(r0,r0), r1 ->
+                        For(sumar(r1,-6), r2 -> dividir(r2,r2)))).toTry();
+
+        assertTrue(res.isFailure());
+    }
+
+    @Test
+    public void testMonadicCompositionWithRecover(){
+        Try<Integer> res =
+                For(sumar(1,2), r0 ->
+                        For(sumar(r0,r0), r1 ->
+                                For(sumar(r1,-6), r2 -> dividir(r2,r2).recover(ArithmeticException.class, -1)))).toTry();
+
+        assertTrue(res.isSuccess());
+        assertEquals(Success(-1),res);
+    }
+
+    @Test
+    public void testMonadicCompositionWithRecoverWith(){
+        Try<Integer> res =
+                For(sumar(1,2), r0 ->
+                        For(sumar(r0,r0), r1 ->
+                                For(sumar(r1,-6), r2 -> dividirConRecoverWith(r2,r2)))).toTry();
+
+        assertTrue(res.isSuccess());
+        assertEquals(Success(-1),res);
+    }
+
 
 }
