@@ -233,13 +233,13 @@ public class OptionSuite {
         Stream<Integer> numbers = Ejercicio.streamNumbers();
         numbers.forEach(x -> {
             Option<String> resultado = Ejercicio.fizz(x)
-                    .flatMap(y -> Option.of(y+Ejercicio.buzz(x).getOrElse("")))
+                    .flatMap(y -> Ejercicio.buzz(x, y))
                     .flatMap(z -> Ejercicio.estaVacio(z, x));
             System.out.println(resultado.getOrElse(""));
         });
 
         assertEquals("Fizz", Ejercicio.fizz(3).getOrElse(""));
-        assertEquals("Buzz", Ejercicio.buzz(5).getOrElse(""));
+        assertEquals("Buzz", Ejercicio.buzz(5,"").getOrElse(""));
     }
 
     @Test
@@ -249,11 +249,11 @@ public class OptionSuite {
         numbers.forEach(x -> {
             Option<String> resultado =
                     For(Ejercicio.fizz(x), r1 ->
-                    For(Option.of(r1 + Ejercicio.buzz(x).getOrElse("")), r2 ->
+                    For(Ejercicio.buzz(x,r1), r2 ->
                     Ejercicio.estaVacio(r2 , x))).toOption();
-            System.out.println(resultado.getOrElse(""));
+            //System.out.println(resultado.getOrElse(""));
         });
         assertEquals("Fizz", Ejercicio.fizz(3).getOrElse(""));
-        assertEquals("Buzz", Ejercicio.buzz(5).getOrElse(""));
+        assertEquals("Buzz", Ejercicio.buzz(5,"").getOrElse(""));
     }
 }
