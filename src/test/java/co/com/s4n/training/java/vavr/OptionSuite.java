@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.Ejercicio;
 import org.junit.Test;
 
 
@@ -17,6 +18,8 @@ import static io.vavr.Patterns.$Some;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.vavr.API.Some;
 import static org.junit.Assert.assertEquals;
@@ -222,5 +225,35 @@ public class OptionSuite {
         Option<Integer> integers = For(esPar(2), d ->
                                    For(esPar(4), c -> Option(d+c))).toOption();
         assertEquals(integers,Some(6));
+    }
+
+    @Test
+    public void testFlatMapAndOption(){
+
+        Stream<Integer> numbers = Ejercicio.streamNumbers();
+        numbers.forEach(x -> {
+            Option<String> resultado = Ejercicio.fizz(x)
+                    .flatMap(y -> Option.of(y+Ejercicio.buzz(x).getOrElse("")))
+                    .flatMap(z -> Ejercicio.estaVacio(z, x));
+            System.out.println(resultado.getOrElse(""));
+        });
+
+        assertEquals("Fizz", Ejercicio.fizz(3).getOrElse(""));
+        assertEquals("Buzz", Ejercicio.buzz(5).getOrElse(""));
+    }
+
+    @Test
+    public void testForComprehensionAndOption(){
+
+        Stream<Integer> numbers = Ejercicio.streamNumbers();
+        numbers.forEach(x -> {
+            Option<String> resultado =
+                    For(Ejercicio.fizz(x), r1 ->
+                    For(Option.of(r1 + Ejercicio.buzz(x).getOrElse("")), r2 ->
+                    Ejercicio.estaVacio(r2 , x))).toOption();
+            System.out.println(resultado.getOrElse(""));
+        });
+        assertEquals("Fizz", Ejercicio.fizz(3).getOrElse(""));
+        assertEquals("Buzz", Ejercicio.buzz(5).getOrElse(""));
     }
 }
