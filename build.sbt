@@ -1,4 +1,4 @@
-import Dependencies._
+//import Dependencies._
 
 lazy val root = (project in file(".")).
   settings(
@@ -15,6 +15,7 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= Seq(
       "io.vavr" % "vavr" % "0.9.2",
       "junit" % "junit" % "4.12" % "test",
-      "com.novocode" % "junit-interface" % "0.11" % "test"
+      "com.novocode" % "junit-interface" % "0.11" % "test",
+      "org.projectlombok" % "lombok" % "1.16.16"
     )
   )
