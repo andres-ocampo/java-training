@@ -696,4 +696,30 @@ public class FutureSuite {
         assertEquals("Failure - Validate Future with Promise",new Integer(15),myFutureOne.get());
         assertFalse("Failure - Validate myFuture is not complete",myFuture.isCompleted());
     }
+
+    @Test
+    public void testFuture(){
+        final long inicio = System.nanoTime();
+        Future<String> f1 = Future.of(() -> {
+            Thread.sleep(500);
+            return "";
+        });
+        Future<String> f2 = Future.of(() -> {
+            Thread.sleep(800);
+            return "";
+        });
+        Future<String> f3 = Future.of(() -> {
+            Thread.sleep(300);
+            return "";
+        });
+
+        Future<String> future = f1.flatMap(a -> f2
+                .flatMap(b -> f3
+                        .flatMap(c -> Future.of(() -> ""))));
+        future.await();
+        long fin = System.nanoTime();
+        long elapsed = TimeUnit.MILLISECONDS.convert((fin - inicio),TimeUnit.NANOSECONDS);
+        System.out.println(elapsed);
+        assertTrue(elapsed>800);
+    }
 }
