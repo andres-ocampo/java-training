@@ -1,6 +1,5 @@
 package co.com.s4n.training.java.jdk;
 
-import io.vavr.control.Option;
 import io.vavr.control.Try;
 
 import java.util.stream.IntStream;
