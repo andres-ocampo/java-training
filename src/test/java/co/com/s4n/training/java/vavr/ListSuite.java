@@ -3,7 +3,11 @@ package co.com.s4n.training.java.vavr;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.junit.Test;
+
+import java.util.NoSuchElementException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static io.vavr.collection.Iterator.empty;
@@ -33,7 +37,27 @@ public class ListSuite {
     public void testZipOnEmptyList() {
         List<String> list = List.of();
         assertTrue("Failure - List should be empty",list.isEmpty());
-        list.zip(empty());
+        List<Tuple2<String, Object>> zip = list.zip(empty());
+        System.out.println("zip size: "+zip.size());
+        assertTrue(zip.size()==0);
+    }
+
+    @Test
+    public void testingZip(){
+        List<Integer> l1 = List.of(1,2,3);
+        List<Integer> l2 = List.of(1,2,3);
+        List<Tuple2<Integer, Integer>> zip = l1.zip(l2);
+        System.out.println("zip with same size: "+zip);
+        assertEquals(zip.headOption().getOrElse(new Tuple2(0,0)), new Tuple2(1,1));
+    }
+
+    @Test
+    public void testingZipWithDiffSize(){
+        List<Integer> l1 = List.of(1,2,3,4);
+        List<Integer> l2 = List.of(1,2,3);
+        List<Tuple2<Integer, Integer>> zip = l1.zip(l2);
+        System.out.println("zip with diff size: "+zip);
+        assertEquals(zip.headOption().getOrElse(new Tuple2(0,0)), new Tuple2(1,1));
     }
 
     @Test
@@ -43,10 +67,41 @@ public class ListSuite {
         assertEquals(head, new Integer(1));
     }
 
+    @Test(expected = NoSuchElementException.class)
+    public void testHeadOnEmptyList(){
+        List<Integer> list1 = List.of();
+        Integer head = list1.head();
+        assertEquals(head, new Integer(1));
+    }
+
+    @Test
+    public void testHeadOptionOnEmptyList(){
+        List<Integer> list1 = List.of();
+        Option<Integer> head = list1.headOption();
+        assertEquals(head, Option.none());
+    }
+
+    @Test
+    public void testHeadOptionConGetOrElse(){
+        List<Integer> list1 = List.of(1,2,3);
+        Option<Integer> head = list1.headOption();
+        int valor = head.getOrElse(1);
+        assertEquals(head, Option.some(1));
+        assertEquals(1,valor);
+    }
+
     @Test
     public void testTail(){
         List<Integer> list1 = List.of(1,2,3);
         List<Integer> expectedTail = List.of(2,3);
+        List<Integer> tail = list1.tail();
+        assertEquals(tail, expectedTail);
+    }
+
+    @Test
+    public void testTailOneElement(){
+        List<Integer> list1 = List.of(1);
+        List<Integer> expectedTail = List.of();
         List<Integer> tail = list1.tail();
         assertEquals(tail, expectedTail);
     }
@@ -157,6 +212,40 @@ public class ListSuite {
                 Tuple.of("B", List.of("A")), list.pop2());
     }
 
+    @Test(expected = NoSuchElementException.class)
+    public void popWithEmpty(){
+        List<Integer> l1 = List.of();
+        List<Integer> l2 = l1.pop();
+        assertEquals(l2, empty());
+    }
+
+    @Test
+    public void popWithEmptyOption(){
+        List<Integer> l1 = List.of();
+        Option<List<Integer>> l2 = l1.popOption();
+        assertEquals(l2, Option.none());
+    }
+
+    @Test
+    public void popAndTail(){
+        List<Integer> l1 = List.of(1, 2, 3, 4, 5);
+        assertEquals(l1.tail(),l1.pop());
+        assertEquals(l1.tailOption(),l1.popOption());
+    }
+
+    @Test
+    public void pop2WithLargerList(){
+        List<Integer> l1 = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        Tuple2<Integer, List<Integer>> l2 = l1.pop2();
+        System.out.println(l2);
+        assertEquals(l2._1.intValue(),1);
+        assertEquals(l2._2,List.of(2,3,4,5,6,7,8,9,10));
+    }
+    @Test(expected = NoSuchElementException.class)
+    public void pop2OnEmptyList(){
+        Tuple2<Object, List<Object>> l1 = List.of().pop2();
+    }
+
     /**
      * Una lista de vavr se comporta como una pila ya que guarda y
      * retorna sus elementos como LIFO.
@@ -201,6 +290,41 @@ public class ListSuite {
         assertEquals("List with length of two", 2, myListRes.length());
         assertEquals("List with last value six", new Integer(6), myListRes.last());
         assertTrue("List with values greater than two", myListResOne.isEmpty());
+    }
+
+    @Test
+    public void testFold(){
+        List<Integer> l1 = List.of(1, 2, 3, 4, 5);
+        Integer r = l1.fold(0, (acc, el) -> acc + el);
+        assertEquals(r.intValue(),15);
+    }
+
+    @Test
+    public void testFoldLeft(){
+        List<Integer> l1 = List.of(1, 2, 3, 4, 5);
+        Integer r = l1.foldLeft(0, (acc, el) -> acc + el);
+        assertEquals(r.intValue(),15);
+    }
+
+    @Test
+    public void testFoldRight(){
+        List<Integer> l1 = List.of(1, 2, 3, 4, 5);
+        Integer r = l1.foldRight(0, (el, acc) -> acc + el);
+        assertEquals(r.intValue(),15);
+    }
+
+    @Test
+    public void testFoldLeftString(){
+        List<String> l1 = List.of("a","b","c");
+        String r = l1.foldLeft("", (acc, el) -> acc + el);
+        assertEquals(r, "abc");
+    }
+
+    @Test
+    public void testFoldRightString(){
+        List<String> l1 = List.of("a","b","c");
+        String r = l1.foldRight("", (el, acc) -> acc + el);
+        assertEquals(r,"cba");
     }
 
     /**
