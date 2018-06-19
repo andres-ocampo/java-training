@@ -30,8 +30,12 @@ public class EitherSuite {
         Either<Integer,String> myEitherR = Either.right("String");
         Either<Integer,String> myEitherL = Either.left(14);
         assertTrue("Valide swap before in Either Right", myEitherR.isRight());
+        assertFalse(myEitherR.isLeft());
+        assertFalse(myEitherR.swap().isRight());
         assertTrue("Valide swap after in Either Right", myEitherR.swap().isLeft());
         assertTrue("Valide swap before in Either Left", myEitherL.isLeft());
+        assertFalse(myEitherL.isRight());
+        assertFalse(myEitherL.swap().isLeft());
         assertTrue("Valide swap after in Either Right", myEitherL.swap().isRight());
     }
 
@@ -51,6 +55,14 @@ public class EitherSuite {
 
         //El Either para operar el lado izquierdo se debe usar un mapLeft.
         assertEquals("Failure - Left Projection", Left(10), e2.mapLeft(it -> it + 5));
+    }
+
+    @Test
+    public void testProjectionMapOnLeft(){
+        Either<Integer,Integer> e2 = Either.left(5);
+
+        //El Either para operar el lado izquierdo se debe usar un mapLeft.
+        assertNotEquals("Failure - Left Projection", Left(10), e2.map(it -> it + 5));
     }
 
     /**
@@ -94,6 +106,34 @@ public class EitherSuite {
 
     }
 
+    public Either<String,Integer> sumar(Integer a, Integer b){
+        return Right(a+b);
+    }
+
+    public Either<String,Integer> dividir(Integer a, Integer b){
+        return b == 0 ? Left("Error: división entre cero") : Right(a/b);
+    }
+
+    @Test
+    public void testFlatMapEither(){
+        Either<String, Integer> res = sumar(1, 1)
+                .flatMap(a -> sumar(a, 1)
+                        .flatMap(b -> dividir(b, 1)));
+
+        assertTrue(res.isRight());
+        assertEquals(Right(new Integer(3)), res);
+    }
+
+    @Test
+    public void testFlatMapEitherLeft(){
+        Either<String, Integer> res = sumar(1, 1)
+                .flatMap(a -> sumar(a, 1)
+                        .flatMap(b -> dividir(b, 0)));
+
+        assertTrue(res.isLeft());
+        assertEquals(Left("Error: división entre cero"), res);
+    }
+
     /**
      * Un Either puede ser filtrado, y en el predicado se pone la condicion
      */
@@ -104,6 +144,16 @@ public class EitherSuite {
 
         assertEquals("value is even",
                 None(),
+                value.filter(it -> it % 2 == 0));
+    }
+
+    @Test
+    public void testEitherFilterSome() {
+
+        Either<String,Integer> value = Either.right(6);
+
+        assertEquals("value is even",
+                Some(Right(6)),
                 value.filter(it -> it % 2 == 0));
     }
 
@@ -182,6 +232,24 @@ public class EitherSuite {
 
         myEitherL.peekLeft(myConsumer);
         assertEquals("Validete Either with peek","foo", valor[0]);
+    }
+
+    public Either<String,String> biPeek(Either<String,String> either, Consumer<String> cRight, Consumer<String> cLeft){
+        return either.isRight() ? either.peek(cRight): either.peekLeft(cLeft);
+    }
+
+    @Test
+    public void testEitherBiPeek() {
+        Either<String,String > either = Either.right("Andres");
+        final String[] valor = {"default"};
+        Consumer<String> cRight = element -> {
+            valor[0] = "foo";
+        };
+        Consumer<String> cLeft = element -> {
+            valor[0] = "bar";
+        };
+        Either<String, String> e = biPeek(either, cRight, cLeft);
+        assertEquals("foo",valor[0]);
     }
 
     /**
